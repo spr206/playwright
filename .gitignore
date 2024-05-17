@@ -1,0 +1,8 @@
+__pycache__
+.auth
+.trash
+Include
+Lib
+Scripts
+logininfo.txt
+pyvenv.cfg
