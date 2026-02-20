@@ -21,15 +21,18 @@ def find_pdf(invoice_num, folder="./pdf_in"):
     return None
 
 def run_automation():
-    trans_dict = get_transactions('transactions.csv')
+    trans_dict = get_transactions('browse_test.csv')
     if not trans_dict:
         print("❌ No transactions found in CSV.")
         return
 
     with sync_playwright() as p:
         # Connect to your 'Debug' Chrome shortcut (Port 9222)
+       
         try:
-            browser = p.chromium.connect_over_cdp("http://localhost:9222")
+            # browser = p.chromium.connect_over_cdp("http://localhost:9222")
+            # Added slow_mo
+            browser = p.chromium.connect_over_cdp("http://localhost:9222", slow_mo=1000)
             context = browser.contexts[0]
             page = context.pages[0] 
         except Exception as e:
@@ -48,6 +51,9 @@ def run_automation():
             # Navigate to the specific invoice
             invoice_url = f"https://washingtontest.assetworks.hosting/fmax/screen/PO_INVOICE_VIEW?tranxNo={transaction}"
             page.goto(invoice_url)
+
+            #Added timeout
+            page.set_default_timeout(10000)
 
             # --- NAVIGATION STEPS ---
             # Using 'wait_for_selector' is faster than 'time.sleep'
