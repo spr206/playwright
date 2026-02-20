@@ -1,4 +1,4 @@
 ChromeDebugProfile
 .venv
-pdfin\*
-transactions.csv
+pdf_in/*
+*.csv
