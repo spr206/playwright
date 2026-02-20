@@ -21,7 +21,7 @@ def find_pdf(invoice_num, folder="./pdf_in"):
     return None
 
 def run_automation():
-    trans_dict = get_transactions('browse_test.csv')
+    trans_dict = get_transactions('browse.csv')
     if not trans_dict:
         print("❌ No transactions found in CSV.")
         return
@@ -49,11 +49,9 @@ def run_automation():
                 continue
 
             # Navigate to the specific invoice
-            invoice_url = f"https://washingtontest.assetworks.hosting/fmax/screen/PO_INVOICE_VIEW?tranxNo={transaction}"
+            invoice_url = f"https://washington.assetworks.hosting/fmax/screen/PO_INVOICE_VIEW?tranxNo={transaction}"
             page.goto(invoice_url)
 
-            #Added timeout
-            page.set_default_timeout(10000)
 
             # --- NAVIGATION STEPS ---
             # Using 'wait_for_selector' is faster than 'time.sleep'
