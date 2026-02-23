@@ -6,7 +6,7 @@ def move_file_to_destination(target_file):
     Moves a specified file to a predefined destination directory.
     """
     # Define your destination directory here
-    destination_dir = r'C:\Users\YourName\Documents\DestinationFolder'
+    destination_dir = r'I:\\groups\\fac2\\fabs\\stores\\FSSAP\\test_ignore\\destination'
     
     # Ensure the destination directory exists
     if not os.path.exists(destination_dir):
@@ -32,7 +32,7 @@ def move_file_to_destination(target_file):
 
 # --- Placeholder Trigger ---
 # This simulates the 'other function' passing the file path
-placeholder_file = r'C:\Users\YourName\Desktop\report.pdf'
+placeholder_file = r'I:\\groups\\fac2\\fabs\\stores\\FSSAP\\test_ignore\\1\\testcopy.pdf'
 
 # Trigger the function
-# move_file_to_destination(placeholder_file)
+move_file_to_destination(placeholder_file)
