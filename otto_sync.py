@@ -21,6 +21,7 @@ class OttoSync:
         if os.path.exists(self.csv_file):
             with open(self.csv_file, mode='r') as file:
                 reader = csv.reader(file)
+                next(reader, None)
                 for row in reader:
                     if len(row) >= 2:
                         trans_dict[row[0].strip()] = row[1].strip()
