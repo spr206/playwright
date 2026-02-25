@@ -27,20 +27,20 @@ def run_automation():
         return
 
     with sync_playwright() as p:
-        # Connect to your 'Debug' Chrome shortcut (Port 9222)
-       
         try:
-            # browser = p.chromium.connect_over_cdp("http://localhost:9222")
-            # Added slow_mo
+            # Connect to your 'Debug' Chrome shortcut
             browser = p.chromium.connect_over_cdp("http://localhost:9222", slow_mo=1000)
             context = browser.contexts[0]
-            page = context.pages[0] 
+            
+            # Create a fresh, dedicated tab for our automation to avoid hidden background processes
+            page = context.new_page() 
         except Exception as e:
             print("❌ Could not connect to Chrome. Is it open with --remote-debugging-port=9222?")
+            print(f"Error details: {e}")
             return
 
         for transaction, invoice in trans_dict.items():
-            print(f"🔎 Processing Transaction: {transaction} (Invoice: {invoice})")
+            print(f"\n🔎 Processing Transaction: {transaction} (Invoice: {invoice})")
             
             # Find the file first
             file_path = find_pdf(invoice)
@@ -50,35 +50,57 @@ def run_automation():
 
             # Navigate to the specific invoice
             invoice_url = f"https://washington.assetworks.hosting/fmax/screen/PO_INVOICE_VIEW?tranxNo={transaction}"
-            page.goto(invoice_url)
-
-
-            # --- NAVIGATION STEPS ---
-            # Using 'wait_for_selector' is faster than 'time.sleep'
-            page.get_by_role("link", name="Related Documents").click()
-            page.get_by_role("button", name="Edit").click()
-            page.get_by_role("button", name="Add").click()
-
-            # --- UPLOAD STEPS ---
-            # We target the ID you found in your previous code
-            input_selector = 'input[type="file"]' # Or '#mainForm\\:DOC_LOADER_WIZARD_STEP1_content\\:newFileUploadWidget'
-            page.set_input_files(input_selector, file_path)
-
-            # --- FORM STEPS ---
-            page.get_by_role("button", name="Next").click()
             
-            # AssetWorks can be slow; we wait for the field to appear
-            type_input = page.get_by_role("textbox", name="Type")
-            type_input.wait_for(state="visible")
-            type_input.fill("VENDOR INVOICE")
-            
-            page.get_by_role("button", name="Next").click()
-            page.get_by_role("button", name="Save").click()
+            try:
+                # wait_until="domcontentloaded" stops waiting once the core HTML is ready
+                page.goto(invoice_url, wait_until="domcontentloaded", timeout=30000)
+            except Exception as e:
+                print(f"⚠️ Failed to load invoice page for {transaction}: {e}")
+                continue
 
-            print(f"✅ Successfully attached {os.path.basename(file_path)}")
+            try:
+                # Wait for the specific 'moreMenu' element to prove the page is ready
+                page.wait_for_selector('a[id="mainForm:sideButtonPanel:moreMenu_4"]', timeout=15000)
+            except Exception as e:
+                print(f"⚠️ The 'moreMenu' button never appeared for {transaction}. Skipping.")
+                continue
+
+            # --- INTERACTION STEPS ---
+            try:
+                # Navigation Steps
+                page.get_by_role("link", name="Related Documents").click()
+                page.get_by_role("button", name="Edit").click()
+                page.get_by_role("button", name="Add").click()
+
+                # Upload Steps
+                input_selector = 'input[type="file"]' 
+                page.set_input_files(input_selector, file_path)
+
+                # Form Steps
+                page.get_by_role("button", name="Next").click()
+                
+                # AssetWorks can be slow; we wait for the field to appear
+                type_input = page.get_by_role("textbox", name="Type")
+                type_input.wait_for(state="visible", timeout=10000)
+                type_input.fill("VENDOR INVOICE")
+                
+                page.get_by_role("button", name="Next").click()
+                page.get_by_role("button", name="Save").click()
+
+                # Wait for the Download button to be attached to the page and visible
+                # page.get_by_id("mainForm:sideButtonPanel:zip").wait_for(state="visible", timeout=15000)
+
+                print(f"✅ Successfully attached {os.path.basename(file_path)}")
+                
+            except Exception as e:
+                print(f"⚠️ Error during interaction steps for {transaction}: {e}")
+                continue
+            
             time.sleep(1) # Short breath between transactions
 
-        print("🏁 All transactions processed.")
+        # Close the dedicated tab when finished
+        page.close()
+        print("\n🏁 All transactions processed.")
 
 if __name__ == "__main__":
     run_automation()

@@ -2,3 +2,4 @@ ChromeDebugProfile
 .venv
 pdf_in/*
 *.csv
+exchangelib_test.py
