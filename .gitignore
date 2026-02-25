@@ -2,3 +2,6 @@ ChromeDebugProfile
 .venv
 pdf_in/*
 *.csv
+exchange*
+done
+logs
