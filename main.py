@@ -7,6 +7,12 @@ from datetime import datetime
 
 from otto_sync import OttoSync
 
+"""
+Todo:
+    maybe move csv handling to main.py?
+"""
+
+
 # --- CONFIGURATION ---
 DATE_STR = datetime.now().strftime("%m%d%y")
 BASE_DIR = Path(f"done/{DATE_STR}")

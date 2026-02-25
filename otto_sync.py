@@ -66,6 +66,9 @@ class OttoSync:
         invoice_num = None
 
         for trans, inv in self.trans_dict.items():
+
+            print(f"\n🔎 Processing Transaction: {transaction_id} (Invoice: {invoice_num})")
+
             if inv.lower() in file_name:
                 transaction_id = trans
                 invoice_num = inv
@@ -91,17 +94,23 @@ class OttoSync:
 
             # --- UPLOAD STEPS ---
             input_selector = 'input[type="file"]'
-            self.page.set_input_files(input_selector, str(file_path))
+            self.page.set_input_files(input_selector, file_path)
 
             # --- FORM STEPS ---
             self.page.get_by_role("button", name="Next").click()
-
+            
+            #Do these need to be self.type_input?
             type_input = self.page.get_by_role("textbox", name="Type")
-            type_input.wait_for(state="visible")
+            type_input.wait_for(state="visible", timeout=10000)
             type_input.fill("VENDOR INVOICE")
 
             self.page.get_by_role("button", name="Next").click()
             self.page.get_by_role("button", name="Save").click()
+
+            # Wait for the Download link to be visible on the page
+            self.page.get_by_role("link", name="Download").wait_for(state="visible", timeout=10000)
+
+            print(f"✅ Successfully attached {os.path.basename(file_path)}")
 
             logging.info(
                 f"✅ Successfully attached {file_name} to transaction {transaction_id}")

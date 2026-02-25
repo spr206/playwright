@@ -9,12 +9,13 @@ def get_transactions(csv_file):
     if os.path.exists(csv_file):
         with open(csv_file, mode='r') as file:
             reader = csv.reader(file)
+            next(reader, None)
             for row in reader:
                 if len(row) >= 2:
                     trans_dict[row[0].strip()] = row[1].strip()
     return trans_dict
 
-def find_pdf(invoice_num, folder="./pdf_in"):
+def find_pdf(invoice_num, folder="I:\\groups\\fac2\\fabs\\stores\\FSSAP\\test_ignore\\donetest"):
     for filename in os.listdir(folder):
         if filename.lower().endswith('.pdf') and invoice_num.lower() in filename.lower():
             return os.path.abspath(os.path.join(folder, filename))
@@ -87,8 +88,8 @@ def run_automation():
                 page.get_by_role("button", name="Next").click()
                 page.get_by_role("button", name="Save").click()
 
-                # Wait for the Download button to be attached to the page and visible
-                # page.get_by_id("mainForm:sideButtonPanel:zip").wait_for(state="visible", timeout=15000)
+                # Wait for the Download link to be visible on the page
+                page.get_by_role("link", name="Download").wait_for(state="visible", timeout=10000)
 
                 print(f"✅ Successfully attached {os.path.basename(file_path)}")
                 
