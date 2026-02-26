@@ -1,7 +1,7 @@
 ChromeDebugProfile
 .git
 .venv
-__pycache__
+__pycache__/
 pdf_in/*
 *.csv
 exchange*
