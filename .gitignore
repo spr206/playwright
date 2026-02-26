@@ -1,9 +1,9 @@
-ChromeDebugProfile
-.git
-.venv
 __pycache__/
-pdf_in/*
+.git
+.ignore
+.venv
+ChromeDebugProfile
 *.csv
-exchange*
 done
 logs
+pdf_in
