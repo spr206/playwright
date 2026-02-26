@@ -40,10 +40,19 @@ def setup_environment():
     (BASE_DIR / "processed").mkdir(parents=True, exist_ok=True)
     (BASE_DIR / "error").mkdir(parents=True, exist_ok=True)
 
-def pull_released():
-    """Mock for your file discovery logic."""
-    # Assuming files are in the current working directory for this example
-    return list(Path(".").glob("*.pdf")) + list(Path(".").glob("*.msg"))
+def pull_released(invoice_num, folder=".\\pdf_in"):
+    for filename in os.listdir(folder):
+        if filename.lower().endswith('.pdf') and invoice_num.lower() in filename.lower():
+            return os.path.abspath(os.path.join(folder, filename))
+    return None
+
+
+# def find_pdf(invoice_num, folder="I:\\groups\\fac2\\fabs\\stores\\FSSAP\\test_ignore\\donetest"):
+#     for filename in os.listdir(folder):
+#         if filename.lower().endswith('.pdf') and invoice_num.lower() in filename.lower():
+#             return os.path.abspath(os.path.join(folder, filename))
+#     return None
+
 
 def run_otto():
     logging.info("--- Starting Otto Sync Session ---")
