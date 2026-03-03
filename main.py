@@ -15,8 +15,12 @@ Todo:
 
 # --- CONFIGURATION ---
 DATE_STR = datetime.now().strftime("%m%d%y")
+
+# BASE_DIR = Path(f"done/{DATE_STR}")
+# SOURCE_DIR = Path(".\\pdf_in")
+
 BASE_DIR = Path(f"done/{DATE_STR}")
-SOURCE_DIR = Path(".\\pdf_in")
+SOURCE_DIR = Path("I:\\groups\\fac2\\fabs\\stores\\FSSAP\\test_ignore\\donetest")
 
 
 def setup_local_logging():

@@ -85,7 +85,7 @@ class OttoSync:
             logging.info(
                 f"Processing Transaction: {transaction_id} (Invoice: {invoice_num})")
 
-            invoice_url = f"https://washingtontest.assetworks.hosting/fmax/screen/PO_INVOICE_VIEW?tranxNo={transaction_id}"
+            invoice_url = f"https://washington.assetworks.hosting/fmax/screen/PO_INVOICE_VIEW?tranxNo={transaction_id}"
             self.page.goto(invoice_url)
 
             # --- NAVIGATION STEPS ---
