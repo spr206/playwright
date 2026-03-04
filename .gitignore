@@ -1,8 +1,7 @@
-__pycache__
-.auth
-.trash
-Include
-Lib
-Scripts
-logininfo.txt
-pyvenv.cfg
+__pycache__/
+.git
+.ignore
+.venv
+ChromeDebugProfile
+*.csv
+logs
