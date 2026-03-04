@@ -15,12 +15,8 @@ Todo:
 
 # --- CONFIGURATION ---
 DATE_STR = datetime.now().strftime("%m%d%y")
-
-# BASE_DIR = Path(f"done/{DATE_STR}")
-# SOURCE_DIR = Path(".\\pdf_in")
-
-BASE_DIR = Path(f"done/{DATE_STR}")
-SOURCE_DIR = Path("I:\\groups\\fac2\\fabs\\stores\\FSSAP\\test_ignore\\donetest")
+SOURCE_DIR = Path("I:/groups/fac2/fabs/stores/FSSAP/Done/otto_sync_test")
+DESTINATION_DIR = SOURCE_DIR / DATE_STR
 
 
 def setup_local_logging():
@@ -45,8 +41,8 @@ def setup_local_logging():
 def setup_environment():
     """Ensure source and destination directories exist."""
     SOURCE_DIR.mkdir(parents=True, exist_ok=True)
-    (BASE_DIR / "processed").mkdir(parents=True, exist_ok=True)
-    (BASE_DIR / "error").mkdir(parents=True, exist_ok=True)
+    (DESTINATION_DIR / "processed").mkdir(parents=True, exist_ok=True)
+    (DESTINATION_DIR / "error").mkdir(parents=True, exist_ok=True)
 
 
 def pull_released(folder_path=SOURCE_DIR):
@@ -79,11 +75,11 @@ def run_otto():
                 success = otto.process_file(file)
 
                 if success:
-                    dest = BASE_DIR / "processed" / file.name
+                    dest = DESTINATION_DIR / "processed" / file.name
                     shutil.copy2(file, dest)
                     logging.info(f"SUCCESS: {file.name}")
                 else:
-                    dest = BASE_DIR / "error" / file.name
+                    dest = DESTINATION_DIR / "error" / file.name
                     shutil.copy2(file, dest)
                     logging.error(f"FAILED: {file.name}")
 
@@ -94,10 +90,9 @@ def run_otto():
 
 def error_check(source_dir=SOURCE_DIR):
     """Cleans up local files if copies exist in processed/error."""
-    processed_dir = BASE_DIR / "processed"
-    error_dir = BASE_DIR / "error"
+    processed_dir = DESTINATION_DIR / "processed"
+    error_dir = DESTINATION_DIR / "error"
 
-    # Iterate through the global SOURCE_DIR (.\pdf_in)
     for file in source_dir.iterdir():
         if not file.is_file():
             continue

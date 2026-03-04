@@ -4,6 +4,4 @@ __pycache__/
 .venv
 ChromeDebugProfile
 *.csv
-done
 logs
-pdf_in

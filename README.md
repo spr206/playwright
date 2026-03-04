@@ -26,16 +26,25 @@
 4.  Invoice-Attacher
     - otto_sync.py
       - Todo
-        - Accomodate .msg files to be attached as EMAIL ATTACHMENT
-        - Error Handling: The print statement in otto_sync.py uses uninitialized variables transaction_id and invoice_num inside the loop before they are assigned.
-        - Efficiency: Move the CSV loading logic into main.py to keep otto_sync.py focused purely on browser interaction.
-        - Reliability: The current matching logic (inv.lower() in file_name) might cause false positives if one invoice number is a substring of another.  
+        - Rerun failed attachments once
+          -  Move failed pdfs from done/mmddyy/error to the input folder and restart from the top
+        - Accomodate
+          - Invoice format edge cases
+            - '728095/1'
+              - WARNING - No matching invoice found in CSV for file: safetyspc 265406ps 728095.pdf
+              - ERROR - FAILED: SafetySPC 265406ps 728095.pdf  
+          - .msg files to be attached as EMAIL ATTACHMENT
+        - Error Handling
+          - The print statement in otto_sync.py uses uninitialized variables transaction_id and invoice_num inside the loop before they are assigned.
+          - Add a try/except block around your directory creation logic to catch permissions errors or disconnections.
+        - Efficiency
+          - Move the CSV loading logic into main.py to keep otto_sync.py focused purely on browser interaction.
+        - Reliability
+          - The current matching logic (inv.lower() in file_name) might cause false positives if one invoice number is a substring of another.
 
 ```
-/pdf-intake/mmddyy
-/New
-/Done/mmddyy
-Main.py
+./logs/
+main.py
 otto_sync.py
-yesterdays-po-invoices.csv
+browse.csv
 ```
