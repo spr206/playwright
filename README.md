@@ -21,7 +21,7 @@
       - V.2
         - Magic
 3.  AiM-Data-Retriever
-    - yesterdays-po-invoices.csv
+    - aim_data.py
       - Playwright workflow
 4.  Invoice-Attacher
     - otto_sync.py
@@ -37,10 +37,14 @@
         - Error Handling
           - The print statement in otto_sync.py uses uninitialized variables transaction_id and invoice_num inside the loop before they are assigned.
           - Add a try/except block around your directory creation logic to catch permissions errors or disconnections.
-        - Efficiency
-          - Move the CSV loading logic into main.py to keep otto_sync.py focused purely on browser interaction.
         - Reliability
           - The current matching logic (inv.lower() in file_name) might cause false positives if one invoice number is a substring of another.
+
+
+##### Test CC commits
+- Build out the playwright steps for aim_data.py then run that shit.
+- Done: Move the CSV loading logic into main.py to keep otto_sync.py focused purely on browser interaction.
+- Done: os replaced by pathlib
 
 ```
 ./logs/
