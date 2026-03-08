@@ -1,7 +1,6 @@
 import shutil
 import logging
 import sys
-import os
 from pathlib import Path
 from datetime import datetime
 
@@ -18,7 +17,7 @@ DESTINATION_DIR = SOURCE_DIR / DATE_STR
 def setup_local_logging():
     """Creates the log directory and configures logging to a timestamped file."""
     # 1. Ensure the ./logs directory exists
-    os.makedirs("./logs", exist_ok=True)
+    Path("./logs").mkdir(exist_ok=True)
 
     # 2. Generate a timestamp (e.g., 2026-02-25_09-30-00)
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

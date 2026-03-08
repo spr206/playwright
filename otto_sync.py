@@ -1,4 +1,3 @@
-import os
 import time
 import logging
 from pathlib import Path
@@ -99,7 +98,7 @@ class OttoSync:
                 state="visible", timeout=10000
             )
 
-            print(f"✅ Successfully attached {os.path.basename(file_path)}")
+            print(f"✅ Successfully attached {Path(file_path).name}")
 
             logging.info(
                 f"✅ Successfully attached {file_name} to transaction {transaction_id}"
