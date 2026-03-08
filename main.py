@@ -6,11 +6,7 @@ from pathlib import Path
 from datetime import datetime
 
 from otto_sync import OttoSync
-
-"""
-Todo:
-    maybe move csv handling to main.py?
-"""
+from aim_data import fetch_browse_csv, load_transactions
 
 
 # --- CONFIGURATION ---
@@ -32,7 +28,7 @@ def setup_local_logging():
     logging.basicConfig(
         filename=log_file,
         level=logging.INFO,  # Change to DEBUG if you need more details
-        format="%(asctime)s - %(levelname)s - %(message)s"
+        format="%(asctime)s - %(levelname)s - %(message)s",
     )
 
     return log_file
@@ -51,10 +47,14 @@ def pull_released(folder_path=SOURCE_DIR):
         return []
 
     # Return a list of Path objects for all PDFs and MSGs
-    return [f for f in folder_path.iterdir() if f.is_file() and f.suffix.lower() in ['.pdf', '.msg']]
+    return [
+        f
+        for f in folder_path.iterdir()
+        if f.is_file() and f.suffix.lower() in [".pdf", ".msg"]
+    ]
 
 
-def run_otto():
+def run_otto(trans_dict):
     logging.info("--- Starting Otto Sync Session ---")
     files = pull_released()
 
@@ -64,9 +64,9 @@ def run_otto():
 
     # Use the context manager to open the browser ONCE
     try:
-        with OttoSync() as otto:
+        with OttoSync(trans_dict) as otto:
             for file in files:
-                if file.suffix.lower() not in ['.pdf', '.msg']:
+                if file.suffix.lower() not in [".pdf", ".msg"]:
                     continue
 
                 logging.info(f"Syncing: {file.name}")
@@ -104,7 +104,8 @@ def error_check(source_dir=SOURCE_DIR):
             try:
                 file.unlink()
                 logging.info(
-                    f"CLEANUP: Deleted local source file {file.name} from {source_dir}")
+                    f"CLEANUP: Deleted local source file {file.name} from {source_dir}"
+                )
             except Exception as e:
                 logging.error(f"Failed to delete {file.name}: {e}")
 
@@ -118,8 +119,12 @@ if __name__ == "__main__":
         # 2. Set up environment AFTER logging has started
         setup_environment()
 
-        # 3. Run the main logic
-        run_otto()
+        # 3. Fetch and load transaction data
+        fetch_browse_csv()
+        trans_dict = load_transactions()
+
+        # 4. Run the main logic
+        run_otto(trans_dict)
         error_check()
         logging.info("Run completed successfully.")
 

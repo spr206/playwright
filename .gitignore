@@ -2,6 +2,7 @@ __pycache__/
 .git
 .ignore
 .venv
+Claude.md
 ChromeDebugProfile
 *.csv
 logs
