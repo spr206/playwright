@@ -32,7 +32,9 @@
           - Invoice format edge cases
             - '728095/1'
               - WARNING - No matching invoice found in CSV for file: safetyspc 265406ps 728095.pdf
-              - ERROR - FAILED: SafetySPC 265406ps 728095.pdf  
+              - ERROR - FAILED: SafetySPC 265406ps 728095.pdf
+            - WO Closed error that pops up after clicking SAVE
+              - Error Code: 7210 Cannot reopen PO 266034, WO 1131795 Phase 001 is **closed**
           - .msg files to be attached as EMAIL ATTACHMENT
         - Error Handling
           - The print statement in otto_sync.py uses uninitialized variables transaction_id and invoice_num inside the loop before they are assigned.

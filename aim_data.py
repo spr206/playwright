@@ -4,7 +4,7 @@ import logging
 from playwright.sync_api import sync_playwright
 
 CSV_FILE = "browse.csv"
-
+workdesk = "https://washington.assetworks.hosting/fmax/screen/WORKDESK" 
 
 def fetch_browse_csv():
     """
@@ -12,8 +12,20 @@ def fetch_browse_csv():
     and writes them to browse.csv (columns: Transaction ID, Invoice Number).
     """
     with sync_playwright() as p:
-        # --- PLAYWRIGHT STEPS (to be implemented) ---
-        pass
+        page = None
+        page.goto(workdesk)
+        page.get_by_role("link", name="Accounts Payable ~ Purchase Order Invoice ~ All Released Today").click()
+            
+        # Wait for the download to start
+        with page.expect_download() as download_info:
+            page.get_by_role("link", name="Export").click()
+
+        # Grab the download object
+        download = download_info.value
+
+        # Save it to your specific directory
+        # Note the 'r' before the string to handle Windows backslashes properly
+        download.save_as(r"c:\\users\\spr206\\python\\playwright\\browse.csv")
 
 
 def load_transactions(csv_file=CSV_FILE):
