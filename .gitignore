@@ -4,5 +4,6 @@ __pycache__/
 .venv
 Claude.md
 ChromeDebugProfile
+chrome_test
 *.csv
 logs
