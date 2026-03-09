@@ -52,3 +52,42 @@ main.py
 otto_sync.py
 browse.csv
 ```
+
+
+Playwright browser recording                                                                                                               
+
+```
+playwright codegen https://washington.assetworks.hosting/fmax/screen/WORKDESK 
+```
+It opens a browser, records your actions, and outputs Playwright code in real time. You can then paste the relevant steps into fetch_browse_csv() in aim_data.py.
+
+"C:\Program Files\Google\Chrome\Application\chrome.exe" --remote-debugging-port=9222 --user-data-dir="C:\Users\spr\pyStuff\playwright\chrome_test"
+
+playwright codegen http://localhost:9222 https://washington.assetworks.hosting/fmax/screen/WORKDESK
+
+
+playwright codegen --user-data-dir="C:\Users\spr\pyStuff\playwright\chrome_test" https://washington.assetworks.hosting/fmax/screen/WORKDESK
+
+
+```
+# old
+  page.get_by_role("link", name="Accounts Payable ~ Purchase Order Invoice ~ All Released Today").click()
+  with page.expect_download() as download_info:
+      page.get_by_role("link", name="Export").click()
+  download = download_info.value
+
+
+# new
+  page.get_by_role("link", name="Accounts Payable ~ Purchase Order Invoice ~ All Released Today").click()
+      
+  # Wait for the download to start
+  with page.expect_download() as download_info:
+      page.get_by_role("link", name="Export").click()
+
+  # Grab the download object
+  download = download_info.value
+
+  # Save it to your specific directory
+  # Note the 'r' before the string to handle Windows backslashes properly
+  download.save_as(r"c:\users\spr\pystuff\playwright\browse.csv")
+```
