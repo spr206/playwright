@@ -12,7 +12,9 @@ def fetch_browse_csv():
     and writes them to browse.csv (columns: Transaction ID, Invoice Number).
     """
     with sync_playwright() as p:
-        page = None
+        browser = p.chromium.connect_over_cdp("http://localhost:9222")
+        context = browser.contexts[0]
+        page = context.new_page()
         page.goto(workdesk)
         page.get_by_role("link", name="Accounts Payable ~ Purchase Order Invoice ~ All Released Today").click()
             
