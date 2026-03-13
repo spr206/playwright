@@ -103,8 +103,7 @@ def error_check(source_dir=SOURCE_DIR):
             try:
                 file.unlink()
                 logging.info(
-                    f"CLEANUP: Deleted local source file {file.name} from {source_dir}"
-                )
+                    f"CLEANUP: Deleted local source file {file.name} from {source_dir}")
             except Exception as e:
                 logging.error(f"Failed to delete {file.name}: {e}")
 
