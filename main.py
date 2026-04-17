@@ -9,7 +9,7 @@ from aim_data import fetch_browse_csv, load_transactions
 
 
 # --- CONFIGURATION ---
-TEST_MODE = True  # Set True to use test server + .ignore/test_files/
+TEST_MODE = False  # Set True to use test server + .ignore/test_files/
 
 DATE_STR = datetime.now().strftime("%m%d%y")
 SOURCE_DIR = Path(".ignore/test_files") if TEST_MODE else Path("I:/groups/fac2/fabs/stores/FSSAP/Done/otto_sync_test")
