@@ -97,16 +97,17 @@ class OttoSync:
             self.page.goto(invoice_url)
 
             # --- NAVIGATION STEPS ---
-            self.page.get_by_role("link", name="Related Documents").click()
-            self.page.get_by_role("button", name="Edit").click()
-            self.page.get_by_role("button", name="Add").click()
+            # self.page.get_by_role("link", name="Related Documents").click()
+            self.page.get_by_role("link", name="Related Documents").evaluate("node => node.click()")
+            self.page.get_by_role("button", name="Edit").evaluate("node => node.click()")
+            self.page.get_by_role("button", name="Add").evaluate("node => node.click()")
 
             # --- UPLOAD STEPS ---
             input_selector = 'input[type="file"]'
             self.page.set_input_files(input_selector, file_path)
 
             # --- FORM STEPS ---
-            self.page.get_by_role("button", name="Next").click()
+            self.page.get_by_role("button", name="Next").evaluate("node => node.click()")
 
             # Do these need to be self.type_input?
             type_input = self.page.get_by_role("textbox", name="Type")
@@ -114,8 +115,8 @@ class OttoSync:
             doc_type = "EMAIL ATTACHMENT" if Path(file_path).suffix.lower() == ".msg" else "VENDOR INVOICE"
             type_input.fill(doc_type)
 
-            self.page.get_by_role("button", name="Next").click()
-            self.page.get_by_role("button", name="Save").click()
+            self.page.get_by_role("button", name="Next").evaluate("node => node.click()")
+            self.page.get_by_role("button", name="Save").evaluate("node => node.click()")
 
             # Wait for the Download link to be visible on the page
             self.page.get_by_role("link", name="Download").wait_for(
