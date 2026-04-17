@@ -9,9 +9,13 @@ from aim_data import fetch_browse_csv, load_transactions
 
 
 # --- CONFIGURATION ---
+TEST_MODE = True  # Set True to use test server + .ignore/test_files/
+
 DATE_STR = datetime.now().strftime("%m%d%y")
-SOURCE_DIR = Path("I:/groups/fac2/fabs/stores/FSSAP/Done/otto_sync_test")
+SOURCE_DIR = Path(".ignore/test_files") if TEST_MODE else Path("I:/groups/fac2/fabs/stores/FSSAP/Done/otto_sync_test")
 DESTINATION_DIR = SOURCE_DIR / DATE_STR
+BASE_URL = "https://washingtontest.assetworks.hosting" if TEST_MODE else "https://washington.assetworks.hosting"
+CSV_FILE = Path(".ignore/test_files/browse.csv") if TEST_MODE else Path("browse.csv")
 
 
 def setup_local_logging():
@@ -37,7 +41,6 @@ def setup_environment():
     """Ensure source and destination directories exist."""
     SOURCE_DIR.mkdir(parents=True, exist_ok=True)
     (DESTINATION_DIR / "processed").mkdir(parents=True, exist_ok=True)
-    (DESTINATION_DIR / "error").mkdir(parents=True, exist_ok=True)
 
 
 def pull_released(folder_path=SOURCE_DIR):
@@ -53,7 +56,7 @@ def pull_released(folder_path=SOURCE_DIR):
     ]
 
 
-def run_otto(trans_dict):
+def run_otto(trans_dict, base_url):
     logging.info("--- Starting Otto Sync Session ---")
     files = pull_released()
 
@@ -67,7 +70,7 @@ def run_otto(trans_dict):
 
     # Use the context manager to open the browser ONCE
     try:
-        with OttoSync(trans_dict) as otto:
+        with OttoSync(trans_dict, base_url) as otto:
             for file in files:
                 if file.suffix.lower() not in [".pdf", ".msg"]:
                     continue
@@ -133,11 +136,12 @@ if __name__ == "__main__":
         setup_environment()
 
         # 3. Fetch and load transaction data
-        fetch_browse_csv()
-        trans_dict = load_transactions()
+        if not TEST_MODE:
+            fetch_browse_csv()
+        trans_dict = load_transactions(CSV_FILE)
 
         # 4. Run the main logic
-        run_otto(trans_dict)
+        run_otto(trans_dict, BASE_URL)
         error_check()
         logging.info("Run completed successfully.")
 

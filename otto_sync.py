@@ -6,9 +6,10 @@ from playwright.sync_api import sync_playwright
 
 
 class OttoSync:
-    def __init__(self, trans_dict):
+    def __init__(self, trans_dict, base_url):
         """Initializes the class with a pre-loaded transaction dictionary."""
         self.trans_dict = trans_dict
+        self.base_url = base_url
         self.playwright = None
         self.browser = None
         self.page = None
@@ -92,7 +93,7 @@ class OttoSync:
                 f"Processing Transaction: {transaction_id} (Invoice: {invoice_num})"
             )
 
-            invoice_url = f"https://washington.assetworks.hosting/fmax/screen/PO_INVOICE_VIEW?tranxNo={transaction_id}"
+            invoice_url = f"{self.base_url}/fmax/screen/PO_INVOICE_VIEW?tranxNo={transaction_id}"
             self.page.goto(invoice_url)
 
             # --- NAVIGATION STEPS ---
