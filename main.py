@@ -61,6 +61,10 @@ def run_otto(trans_dict):
         logging.info("No files found.")
         return
 
+    exact_count = 0
+    partial_count = 0
+    failed_count = 0
+
     # Use the context manager to open the browser ONCE
     try:
         with OttoSync(trans_dict) as otto:
@@ -70,17 +74,32 @@ def run_otto(trans_dict):
 
                 logging.info(f"Syncing: {file.name}")
 
-                # Call the method from the imported class
-                success = otto.process_file(file)
+                result = otto.process_file(file)
 
-                if success:
+                if result == "exact":
+                    exact_count += 1
                     dest = DESTINATION_DIR / "processed" / file.name
                     shutil.copy2(file, dest)
                     logging.info(f"SUCCESS: {file.name}")
+                elif result == "partial":
+                    partial_count += 1
+                    dest = DESTINATION_DIR / "processed" / file.name
+                    shutil.copy2(file, dest)
+                    logging.info(f"SUCCESS (partial match): {file.name}")
                 else:
+                    failed_count += 1
                     dest = DESTINATION_DIR / "error" / file.name
                     shutil.copy2(file, dest)
                     logging.error(f"FAILED: {file.name}")
+
+        summary = (
+            f"\n--- Batch Complete ---\n"
+            f"  Exact matches:   {exact_count}\n"
+            f"  Partial matches: {partial_count}\n"
+            f"  Unsuccessful:    {failed_count}\n"
+        )
+        print(summary)
+        logging.info(summary)
 
     except Exception as e:
         logging.critical(f"Failed to initialize Playwright: {e}")
