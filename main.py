@@ -88,9 +88,7 @@ def run_otto(trans_dict):
                     logging.info(f"SUCCESS (partial match): {file.name}")
                 else:
                     failed_count += 1
-                    dest = DESTINATION_DIR / "error" / file.name
-                    shutil.copy2(file, dest)
-                    logging.error(f"FAILED: {file.name}")
+                    logging.error(f"FAILED: {file.name} — left in source for retry")
 
         summary = (
             f"\n--- Batch Complete ---\n"
@@ -109,16 +107,14 @@ def run_otto(trans_dict):
 def error_check(source_dir=SOURCE_DIR):
     """Cleans up local files if copies exist in processed/error."""
     processed_dir = DESTINATION_DIR / "processed"
-    error_dir = DESTINATION_DIR / "error"
 
     for file in source_dir.iterdir():
         if not file.is_file():
             continue
 
         in_processed = (processed_dir / file.name).exists()
-        in_error = (error_dir / file.name).exists()
 
-        if in_processed or in_error:
+        if in_processed:
             try:
                 file.unlink()
                 logging.info(
