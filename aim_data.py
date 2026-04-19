@@ -1,45 +1,49 @@
-import os
 import csv
-import logging
+import tempfile
+from pathlib import Path
 from playwright.sync_api import sync_playwright
+from otto_sync import CHROME_PROFILE_DIR
 
-CSV_FILE = "browse.csv"
-workdesk = "https://washington.assetworks.hosting/fmax/screen/WORKDESK" 
+WORKDESK_URL = "https://washington.assetworks.hosting/fmax/screen/WORKDESK"
+
 
 def fetch_browse_csv():
     """
-    Uses Playwright to retrieve yesterday's PO invoices from AiM
-    and writes them to browse.csv (columns: Transaction ID, Invoice Number).
+    Uses Playwright to retrieve today's PO invoices from AiM and saves them
+    to a temporary CSV file. Returns the Path to that file.
     """
+    tmp_path = Path(tempfile.gettempdir()) / "otto_browse_temp.csv"
+
     with sync_playwright() as p:
-        browser = p.chromium.connect_over_cdp("http://localhost:9222")
-        context = browser.contexts[0]
-        page = context.new_page()
-        page.goto(workdesk)
+        context = p.chromium.launch_persistent_context(
+            user_data_dir=str(CHROME_PROFILE_DIR),
+            headless=False,
+            slow_mo=1000,
+        )
+        page = context.pages[0] if context.pages else context.new_page()
+        page.goto(WORKDESK_URL)
         page.get_by_role("link", name="Accounts Payable ~ Purchase Order Invoice ~ All Released Today").click()
-            
-        # Wait for the download to start
+
         with page.expect_download() as download_info:
             page.get_by_role("link", name="Export").click()
 
-        # Grab the download object
-        download = download_info.value
+        download_info.value.save_as(str(tmp_path))
+        context.close()
 
-        # Save it to your specific directory
-        # Note the 'r' before the string to handle Windows backslashes properly
-        download.save_as(r"c:\\users\\spr206\\python\\playwright\\browse.csv")
+    return tmp_path
 
 
-def load_transactions(csv_file=CSV_FILE):
-    """Reads browse.csv and returns a dict mapping Transaction ID -> Invoice Number."""
+def load_transactions(csv_file):
+    """Reads a CSV file and returns a dict mapping Transaction ID -> Invoice Number."""
     trans_dict = {}
-    if os.path.exists(csv_file):
-        with open(csv_file, mode="r") as file:
+    csv_path = Path(csv_file)
+    if csv_path.exists():
+        with open(csv_path, mode="r") as file:
             reader = csv.reader(file)
             next(reader, None)  # skip header
             for row in reader:
                 if len(row) >= 2:
                     trans_dict[row[0].strip()] = row[1].strip()
     else:
-        logging.error(f"CSV file '{csv_file}' not found.")
+        print(f"CSV file '{csv_file}' not found.")
     return trans_dict
