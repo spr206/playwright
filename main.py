@@ -46,9 +46,6 @@ def run_otto(trans_dict, base_url):
     try:
         with OttoSync(trans_dict, base_url) as otto:
             for file in files:
-                if file.suffix.lower() not in [".pdf", ".msg"]:
-                    continue
-
                 print(f"Syncing: {file.name}")
 
                 result = otto.process_file(file)
@@ -67,16 +64,17 @@ def run_otto(trans_dict, base_url):
                     failed_count += 1
                     print(f"FAILED: {file.name} — left in source for retry")
 
+    except Exception as e:
+        print(f"Batch error: {e}")
+        raise
+
+    finally:
         print(
             f"\n--- Batch Complete ---\n"
             f"  Exact matches:   {exact_count}\n"
             f"  Partial matches: {partial_count}\n"
             f"  Unsuccessful:    {failed_count}\n"
         )
-
-    except Exception as e:
-        print(f"Failed to initialize Playwright: {e}")
-        raise
 
 
 def error_check(source_dir=SOURCE_DIR):
