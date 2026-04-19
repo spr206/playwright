@@ -9,9 +9,13 @@ from aim_data import fetch_browse_csv, load_transactions
 
 
 # --- CONFIGURATION ---
+TEST_MODE = False  # Set True to use test server + .ignore/test_files/
+
 DATE_STR = datetime.now().strftime("%m%d%y")
-SOURCE_DIR = Path("I:/groups/fac2/fabs/stores/FSSAP/Done/otto_sync_test")
+SOURCE_DIR = Path(".ignore/test_files") if TEST_MODE else Path("I:/groups/fac2/fabs/stores/FSSAP/Done/otto_sync_test")
 DESTINATION_DIR = SOURCE_DIR / DATE_STR
+BASE_URL = "https://washingtontest.assetworks.hosting" if TEST_MODE else "https://washington.assetworks.hosting"
+CSV_FILE = Path(".ignore/test_files/browse.csv") if TEST_MODE else Path("browse.csv")
 
 
 def setup_local_logging():
@@ -37,7 +41,6 @@ def setup_environment():
     """Ensure source and destination directories exist."""
     SOURCE_DIR.mkdir(parents=True, exist_ok=True)
     (DESTINATION_DIR / "processed").mkdir(parents=True, exist_ok=True)
-    (DESTINATION_DIR / "error").mkdir(parents=True, exist_ok=True)
 
 
 def pull_released(folder_path=SOURCE_DIR):
@@ -53,7 +56,7 @@ def pull_released(folder_path=SOURCE_DIR):
     ]
 
 
-def run_otto(trans_dict):
+def run_otto(trans_dict, base_url):
     logging.info("--- Starting Otto Sync Session ---")
     files = pull_released()
 
@@ -61,26 +64,43 @@ def run_otto(trans_dict):
         logging.info("No files found.")
         return
 
+    exact_count = 0
+    partial_count = 0
+    failed_count = 0
+
     # Use the context manager to open the browser ONCE
     try:
-        with OttoSync(trans_dict) as otto:
+        with OttoSync(trans_dict, base_url) as otto:
             for file in files:
                 if file.suffix.lower() not in [".pdf", ".msg"]:
                     continue
 
                 logging.info(f"Syncing: {file.name}")
 
-                # Call the method from the imported class
-                success = otto.process_file(file)
+                result = otto.process_file(file)
 
-                if success:
+                if result == "exact":
+                    exact_count += 1
                     dest = DESTINATION_DIR / "processed" / file.name
                     shutil.copy2(file, dest)
                     logging.info(f"SUCCESS: {file.name}")
-                else:
-                    dest = DESTINATION_DIR / "error" / file.name
+                elif result == "partial":
+                    partial_count += 1
+                    dest = DESTINATION_DIR / "processed" / file.name
                     shutil.copy2(file, dest)
-                    logging.error(f"FAILED: {file.name}")
+                    logging.info(f"SUCCESS (partial match): {file.name}")
+                else:
+                    failed_count += 1
+                    logging.error(f"FAILED: {file.name} — left in source for retry")
+
+        summary = (
+            f"\n--- Batch Complete ---\n"
+            f"  Exact matches:   {exact_count}\n"
+            f"  Partial matches: {partial_count}\n"
+            f"  Unsuccessful:    {failed_count}\n"
+        )
+        print(summary)
+        logging.info(summary)
 
     except Exception as e:
         logging.critical(f"Failed to initialize Playwright: {e}")
@@ -90,21 +110,18 @@ def run_otto(trans_dict):
 def error_check(source_dir=SOURCE_DIR):
     """Cleans up local files if copies exist in processed/error."""
     processed_dir = DESTINATION_DIR / "processed"
-    error_dir = DESTINATION_DIR / "error"
 
     for file in source_dir.iterdir():
         if not file.is_file():
             continue
 
         in_processed = (processed_dir / file.name).exists()
-        in_error = (error_dir / file.name).exists()
 
-        if in_processed or in_error:
+        if in_processed:
             try:
                 file.unlink()
                 logging.info(
-                    f"CLEANUP: Deleted local source file {file.name} from {source_dir}"
-                )
+                    f"CLEANUP: Deleted local source file {file.name} from {source_dir}")
             except Exception as e:
                 logging.error(f"Failed to delete {file.name}: {e}")
 
@@ -119,11 +136,12 @@ if __name__ == "__main__":
         setup_environment()
 
         # 3. Fetch and load transaction data
-        fetch_browse_csv()
-        trans_dict = load_transactions()
+        if not TEST_MODE:
+            fetch_browse_csv()
+        trans_dict = load_transactions(CSV_FILE)
 
         # 4. Run the main logic
-        run_otto(trans_dict)
+        run_otto(trans_dict, BASE_URL)
         error_check()
         logging.info("Run completed successfully.")
 

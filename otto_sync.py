@@ -1,3 +1,4 @@
+import re
 import time
 import logging
 from pathlib import Path
@@ -5,9 +6,10 @@ from playwright.sync_api import sync_playwright
 
 
 class OttoSync:
-    def __init__(self, trans_dict):
+    def __init__(self, trans_dict, base_url):
         """Initializes the class with a pre-loaded transaction dictionary."""
         self.trans_dict = trans_dict
+        self.base_url = base_url
         self.playwright = None
         self.browser = None
         self.page = None
@@ -16,12 +18,17 @@ class OttoSync:
         """Starts Playwright and connects to the existing Chrome instance."""
         self.playwright = sync_playwright().start()
         try:
+            # self.browser = self.playwright.chromium.connect_over_cdp(
+            #     "http://localhost:9222", slow_mo=1000
+            # )
+
             self.browser = self.playwright.chromium.connect_over_cdp(
-                "http://localhost:9222", slow_mo=1000
+                "http://127.0.0.1:9222", slow_mo=1000
             )
+
             context = self.browser.contexts[0]
             self.page = context.pages[0]
-            logging.info("Successfully connected to Chrome CDP (Port 9222).")
+            logging.info("Connected to Chrome CDP (Port 9222).")
         except Exception as e:
             logging.error(
                 "Could not connect to Chrome. Is it open with --remote-debugging-port=9222?"
@@ -50,19 +57,35 @@ class OttoSync:
         # 1. Match the file to a transaction in the CSV
         transaction_id = None
         invoice_num = None
+        match_type = None
 
+        # Pass 1 — exact substring
         for trans, inv in self.trans_dict.items():
             if inv.lower() in file_name:
                 transaction_id = trans
                 invoice_num = inv
-                print(
-                    f"\n🔎 Processing Transaction: {transaction_id} (Invoice: {invoice_num})"
-                )
+                match_type = "exact"
                 break
+
+        # Pass 2 — partial (strip non-alphanumeric chars from invoice number)
+        if not transaction_id:
+            best_len = 0
+            for trans, inv in self.trans_dict.items():
+                cleaned = re.sub(r'[^a-z0-9]', '', inv.lower())
+                if cleaned and cleaned in file_name and len(cleaned) > best_len:
+                    transaction_id = trans
+                    invoice_num = inv
+                    match_type = "partial"
+                    best_len = len(cleaned)
 
         if not transaction_id:
             logging.warning(f"No matching invoice found in CSV for file: {file_name}")
             return False
+
+        if match_type == "partial":
+            logging.warning(f"Partial match used for {file_name}: invoice '{invoice_num}'")
+
+        print(f"\n🔎 [{match_type.upper()} MATCH] Transaction: {transaction_id} (Invoice: {invoice_num})")
 
         # 2. Run the Playwright automation for this specific file
         try:
@@ -70,41 +93,45 @@ class OttoSync:
                 f"Processing Transaction: {transaction_id} (Invoice: {invoice_num})"
             )
 
-            invoice_url = f"https://washington.assetworks.hosting/fmax/screen/PO_INVOICE_VIEW?tranxNo={transaction_id}"
+            invoice_url = f"{self.base_url}/fmax/screen/PO_INVOICE_VIEW?tranxNo={transaction_id}"
             self.page.goto(invoice_url)
 
             # --- NAVIGATION STEPS ---
-            self.page.get_by_role("link", name="Related Documents").click()
-            self.page.get_by_role("button", name="Edit").click()
-            self.page.get_by_role("button", name="Add").click()
+            # self.page.get_by_role("link", name="Related Documents").click()
+            self.page.get_by_role("link", name="Related Documents").evaluate("node => node.click()")
+            self.page.get_by_role("button", name="Edit").evaluate("node => node.click()")
+            self.page.get_by_role("button", name="Add").evaluate("node => node.click()")
 
             # --- UPLOAD STEPS ---
             input_selector = 'input[type="file"]'
             self.page.set_input_files(input_selector, file_path)
 
             # --- FORM STEPS ---
-            self.page.get_by_role("button", name="Next").click()
+            self.page.get_by_role("button", name="Next").evaluate("node => node.click()")
 
             # Do these need to be self.type_input?
             type_input = self.page.get_by_role("textbox", name="Type")
             type_input.wait_for(state="visible", timeout=10000)
-            type_input.fill("VENDOR INVOICE")
+            doc_type = "EMAIL ATTACHMENT" if Path(file_path).suffix.lower() == ".msg" else "VENDOR INVOICE"
+            type_input.fill(doc_type)
 
-            self.page.get_by_role("button", name="Next").click()
-            self.page.get_by_role("button", name="Save").click()
+            self.page.get_by_role("button", name="Next").evaluate("node => node.click()")
+            self.page.get_by_role("button", name="Save").evaluate("node => node.click()")
 
             # Wait for the Download link to be visible on the page
             self.page.get_by_role("link", name="Download").wait_for(
                 state="visible", timeout=10000
             )
 
-            print(f"✅ Successfully attached {Path(file_path).name}")
+            print(
+                f"\n✅ Attached {file_name} to transaction {transaction_id}"
+            )
 
             logging.info(
-                f"✅ Successfully attached {file_name} to transaction {transaction_id}"
+                f"\n✅ Attached {file_name} to transaction {transaction_id}"
             )
             time.sleep(1)  # Short breath between transactions
-            return True
+            return match_type
 
         except Exception as e:
             logging.error(f"⚠️ Automation failed for {file_name}: {str(e)}")
