@@ -1,0 +1,23 @@
+version = 1
+requires-python = ">=3.12"
+
+[[package]]
+name = "nuitka"
+version = "4.0.6"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0a/4b/4923ebb606657c26d53969e1d864c89f2f4a8eca7b6ab45bed66060c9cae/nuitka-4.0.6.tar.gz", hash = "sha256:9c14827058faf27414b6d28f5a27ef709fd6aa9b5f04af20e01b42889ac25b5c", size = 4421620 }
+
+[[package]]
+name = "playwright"
+version = "0.1.0"
+source = { virtual = "." }
+
+[package.dev-dependencies]
+dev = [
+    { name = "nuitka" },
+]
+
+[package.metadata]
+
+[package.metadata.requires-dev]
+dev = [{ name = "nuitka", specifier = ">=4.0.6" }]
