@@ -1,8 +1,11 @@
+import os
 import re
 import time
 import logging
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+
+CHROME_PROFILE_DIR = Path(os.environ["LOCALAPPDATA"]) / "ChromeProfile-Playwright-Nuitka-Deployment"
 
 
 class OttoSync:
@@ -11,34 +14,30 @@ class OttoSync:
         self.trans_dict = trans_dict
         self.base_url = base_url
         self.playwright = None
-        self.browser = None
+        self.context = None
         self.page = None
 
     def __enter__(self):
-        """Starts Playwright and connects to the existing Chrome instance."""
+        """Starts Playwright and launches Chromium with a persistent profile."""
         self.playwright = sync_playwright().start()
         try:
-            # self.browser = self.playwright.chromium.connect_over_cdp(
-            #     "http://localhost:9222", slow_mo=1000
-            # )
-
-            self.browser = self.playwright.chromium.connect_over_cdp(
-                "http://127.0.0.1:9222", slow_mo=1000
+            self.context = self.playwright.chromium.launch_persistent_context(
+                user_data_dir=str(CHROME_PROFILE_DIR),
+                headless=False,
+                slow_mo=1000,
             )
-
-            context = self.browser.contexts[0]
-            self.page = context.pages[0]
-            logging.info("Connected to Chrome CDP (Port 9222).")
+            self.page = self.context.pages[0] if self.context.pages else self.context.new_page()
+            logging.info(f"Launched Chromium with profile at {CHROME_PROFILE_DIR}.")
         except Exception as e:
-            logging.error(
-                "Could not connect to Chrome. Is it open with --remote-debugging-port=9222?"
-            )
-            raise e  # Pass the error up so main.py catches it
+            logging.error(f"Could not launch Chromium: {e}")
+            raise e
 
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Ensures Playwright closes safely when the 'with' block ends."""
+        if self.context:
+            self.context.close()
         if self.playwright:
             self.playwright.stop()
             logging.info("Playwright session closed.")
