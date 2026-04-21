@@ -67,16 +67,17 @@ class OttoSync:
                 match_type = "exact"
                 break
 
-        # Pass 2 — partial (strip non-alphanumeric chars from invoice number)
+        # Pass 2 — partial segment match (any segment of invoice number found in filename)
         if not transaction_id:
             best_len = 0
             for trans, inv in self.trans_dict.items():
-                cleaned = re.sub(r'[^a-z0-9]', '', inv.lower())
-                if cleaned and cleaned in file_name and len(cleaned) > best_len:
-                    transaction_id = trans
-                    invoice_num = inv
-                    match_type = "partial"
-                    best_len = len(cleaned)
+                segments = [s for s in re.split(r'[^a-z0-9]', inv.lower()) if len(s) >= 4]
+                for seg in segments:
+                    if seg in file_name and len(seg) > best_len:
+                        transaction_id = trans
+                        invoice_num = inv
+                        match_type = "partial"
+                        best_len = len(seg)
 
         if not transaction_id:
             logging.warning(f"No matching invoice found in CSV for file: {file_name}")

@@ -40,7 +40,7 @@ def setup_local_logging():
 def setup_environment():
     """Ensure source and destination directories exist."""
     SOURCE_DIR.mkdir(parents=True, exist_ok=True)
-    (DESTINATION_DIR / "processed").mkdir(parents=True, exist_ok=True)
+    DESTINATION_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def pull_released(folder_path=SOURCE_DIR):
@@ -81,12 +81,12 @@ def run_otto(trans_dict, base_url):
 
                 if result == "exact":
                     exact_count += 1
-                    dest = DESTINATION_DIR / "processed" / file.name
+                    dest = DESTINATION_DIR / file.name
                     shutil.copy2(file, dest)
                     logging.info(f"SUCCESS: {file.name}")
                 elif result == "partial":
                     partial_count += 1
-                    dest = DESTINATION_DIR / "processed" / file.name
+                    dest = DESTINATION_DIR / file.name
                     shutil.copy2(file, dest)
                     logging.info(f"SUCCESS (partial match): {file.name}")
                 else:
@@ -108,14 +108,12 @@ def run_otto(trans_dict, base_url):
 
 
 def error_check(source_dir=SOURCE_DIR):
-    """Cleans up local files if copies exist in processed/error."""
-    processed_dir = DESTINATION_DIR / "processed"
-
+    """Cleans up local files if copies exist in destination/error."""
     for file in source_dir.iterdir():
         if not file.is_file():
             continue
 
-        in_processed = (processed_dir / file.name).exists()
+        in_processed = (DESTINATION_DIR / file.name).exists()
 
         if in_processed:
             try:
