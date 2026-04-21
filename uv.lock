@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.12"
 
 [[package]]
@@ -385,12 +386,6 @@ wheels = [
 ]
 
 [[package]]
-name = "nuitka"
-version = "4.0.8"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/1c/48/e54130d57b89fc015d702e98a1a217b5757625d01a01cc07d29fd046d336/nuitka-4.0.8.tar.gz", hash = "sha256:3f87e87e4d3773997944ce401145ef21461337121d39ea0fbe678274005e60ba", size = 4422692 }
-
-[[package]]
 name = "oauthlib"
 version = "3.3.1"
 source = { registry = "https://pypi.org/simple" }
@@ -427,19 +422,11 @@ dependencies = [
     { name = "playwright" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "nuitka" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "exchangelib", specifier = ">=5.6.0" },
     { name = "playwright", specifier = ">=1.58.0" },
 ]
-
-[package.metadata.requires-dev]
-dev = [{ name = "nuitka", specifier = ">=4.0.6" }]
 
 [[package]]
 name = "pycparser"
@@ -563,7 +550,7 @@ name = "tzlocal"
 version = "5.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "tzdata", marker = "platform_system == 'Windows'" },
+    { name = "tzdata", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/8b/2e/c14812d3d4d9cd1773c6be938f89e5735a1f11a9f184ac3639b93cef35d5/tzlocal-5.3.1.tar.gz", hash = "sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd", size = 30761 }
 wheels = [
