@@ -36,25 +36,27 @@
         - accomodate statements
         - ui for editing normalized Co names
         - log to ui
-3.  AiM-Data-Retriever
+3.  AiM-Data-Retriever COMPLETED
     - aim_data.py
 4.  Invoice-Attacher
     - otto_sync.py
       - Todo
-        - Rerun failed attachments once
-          - Move failed pdfs from done/mmddyy/error to the input folder and restart from the top
+        - Rerun failed attachments once COMPLETED
+          - <s>Move failed pdfs from done/mmddyy/error to the input folder and restart from the top</s>
+          - Keep failed pdfs in the input folder after consecutive passes
         - Accomodate
           - Invoice format edge cases
-            - '728095/1'
-              - WARNING - No matching invoice found in CSV for file: safetyspc 265406ps 728095.pdf
-              - ERROR - FAILED: SafetySPC 265406ps 728095.pdf
+            - '728095/1' COMPLETED
+              - <s>WARNING - No matching invoice found in CSV for file: safetyspc 265406ps 728095.pdf
+              - ERROR - FAILED: SafetySPC 265406ps 728095.pdf</s>
+              - Log PARTIAL MATCH and EXACT MATCH with final tally at the end of the run
             - WO Closed error that pops up after clicking SAVE
               - Error Code: 7210 Cannot reopen PO 266034, WO 1131795 Phase 001 is **closed**
           - .msg files to be attached as EMAIL ATTACHMENT
-        - Error Handling
+        - Error Handling COMPLETED
           - The print statement in otto_sync.py uses uninitialized variables transaction_id and invoice_num inside the loop before they are assigned.
           - Add a try/except block around directory creation logic to catch permissions errors or disconnections.
-        - Reliability
+        - Reliability COMPLETED
           - The current matching logic (inv.lower() in file_name) might cause false positives if one invoice number is a substring of another.
 
 ```
