@@ -1,10 +1,30 @@
+import os
 import shutil
+import subprocess
 import sys
 from pathlib import Path
 from datetime import datetime
 
 from otto_sync import OttoSync
 from aim_data import fetch_browse_csv, load_transactions
+
+
+def setup_playwright():
+    try:
+        __compiled__
+    except NameError:
+        return
+
+    exe_dir = Path(sys.executable).parent
+    browsers_dir = exe_dir / "browsers"
+    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(browsers_dir)
+
+    if not any(browsers_dir.glob("chromium-*")):
+        print("First run: downloading Chromium (requires internet)...")
+        driver = exe_dir / "playwright" / "driver" / "playwright.exe"
+        result = subprocess.run([str(driver), "install", "chromium"], env=os.environ.copy())
+        if result.returncode != 0:
+            raise RuntimeError("Chromium install failed — check internet connection.")
 
 
 DATE_STR = datetime.now().strftime("%m%d%y")
@@ -96,6 +116,7 @@ def error_check(source_dir=SOURCE_DIR):
 if __name__ == "__main__":
     csv_path = None
     try:
+        setup_playwright()
         setup_environment()
         csv_path = fetch_browse_csv()
         trans_dict = load_transactions(csv_path)

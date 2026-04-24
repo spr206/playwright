@@ -1,13 +1,16 @@
 import os
 import re
+import sys
 import time
 import logging
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-CHROME_PROFILE_DIR = (
-    Path(os.environ["LOCALAPPDATA"]) / "ChromeProfile-Playwright-Nuitka-Deployment"
-)
+try:
+    __compiled__
+    CHROME_PROFILE_DIR = Path(sys.executable).parent / "chrome_profile"
+except NameError:
+    CHROME_PROFILE_DIR = Path(os.environ["LOCALAPPDATA"]) / "ChromeProfile-Playwright-Nuitka-Deployment"
 
 
 class OttoSync:
