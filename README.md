@@ -70,3 +70,8 @@ Playwright recorder
 ```
 playwright codegen --user-data-dir="C:\ChromeDebugProfile" http://targeturl.com/url
 ```
+
+
+python -m nuitka --standalone ^
+  --include-data-dir=.venv\Lib\site-packages\playwright\driver=playwright\driver ^
+  main.py
