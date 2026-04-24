@@ -41,6 +41,8 @@
 4.  Invoice-Attacher
     - otto_sync.py
       - Todo
+        - Implement a --debug flag to print the call log to console.
+        - Have error specific logs print to the cli after end of batch summary.
         - Rerun failed attachments once COMPLETED
           - <s>Move failed pdfs from done/mmddyy/error to the input folder and restart from the top</s>
           - Keep failed pdfs in the input folder after consecutive passes
@@ -71,4 +73,18 @@ Playwright recorder
 
 ```
 playwright codegen --user-data-dir="C:\ChromeDebugProfile" http://targeturl.com/url
+```
+
+
+
+
+Call log example
+
+```
+2026-04-22 07:28:36,764 - ERROR - \u26a0\ufe0f Automation failed for jci 250459ps 53738393.pdf: Locator.evaluate: Timeout 30000ms exceeded.
+Call log:
+  - waiting for get_by_role("button", name="Save")
+    - waiting for navigation to finish...
+    - navigated to "https://washington.assetworks.hosting/fmax/screen/PO_INVOICE_RELATED_DOCS_EDIT"
+2026-04-22 07:28:36,764 - ERROR - FAILED: JCI 250459ps 53738393.pdf � left in source for retry
 ```
