@@ -16,13 +16,21 @@ def setup_playwright():
         return
 
     exe_dir = Path(sys.executable).parent
-    browsers_dir = exe_dir / "browsers"
-    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(browsers_dir)
+    bundled_dir = exe_dir / "playwright" / "driver" / "package" / ".local-browsers"
 
-    if not any(browsers_dir.glob("chromium-*")):
-        print("First run: downloading Chromium (requires internet)...")
-        driver = exe_dir / "playwright" / "driver" / "playwright.exe"
-        result = subprocess.run([str(driver), "install", "chromium"], env=os.environ.copy())
+    if any(bundled_dir.glob("chromium-*")):
+        os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(bundled_dir)
+        return
+
+    fallback_dir = exe_dir / "browsers"
+    os.environ["PLAYWRIGHT_BROWSERS_PATH"] = str(fallback_dir)
+
+    if not any(fallback_dir.glob("chromium-*")):
+        print("Chromium not found. Downloading (requires internet)...")
+        fallback_dir.mkdir(parents=True, exist_ok=True)
+        node = exe_dir / "playwright" / "driver" / "node.exe"
+        cli = exe_dir / "playwright" / "driver" / "package" / "cli.js"
+        result = subprocess.run([str(node), str(cli), "install", "chromium"], env=os.environ.copy())
         if result.returncode != 0:
             raise RuntimeError("Chromium install failed — check internet connection.")
 
