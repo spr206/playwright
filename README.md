@@ -75,3 +75,11 @@ playwright codegen --user-data-dir="C:\ChromeDebugProfile" http://targeturl.com/
 python -m nuitka --standalone ^
   --include-data-dir=.venv\Lib\site-packages\playwright\driver=playwright\driver ^
   main.py
+
+
+  - Utilize the existing open browser session from the csv grab for the batch
+  - Keep cli open after batch completion
+  - Don't list 'deleted....' during cleanup
+  - Refine the CLI output
+  - Place session log in Done\logs
+  - Place finished pdfs into mmddyy instead of mmddyy\processed
