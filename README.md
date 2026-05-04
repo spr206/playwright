@@ -66,12 +66,15 @@ otto_sync.py
 ```
 
 Playwright recorder
-
 ```
 playwright codegen --user-data-dir="C:\ChromeDebugProfile" http://targeturl.com/url
 ```
 
 
-python -m nuitka --standalone ^
-  --include-data-dir=.venv\Lib\site-packages\playwright\driver=playwright\driver ^
-  main.py
+Standalone build
+```
+uv run python -m nuitka --standalone --mingw64 --playwright-include-browser=chromium-1208 main.py
+```
+
+uv run python -m nuitka --clean-cache=all
+
