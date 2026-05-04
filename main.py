@@ -1,3 +1,4 @@
+import logging
 import os
 import shutil
 import subprocess
@@ -38,17 +39,16 @@ def setup_playwright():
 DATE_STR = datetime.now().strftime("%m%d%y")
 SOURCE_DIR = Path("I:/groups/fac2/fabs/stores/FSSAP/Done/otto_sync_test")
 DESTINATION_DIR = SOURCE_DIR / DATE_STR
+LOG_DIR = Path("./logs")
 BASE_URL = "https://washington.assetworks.hosting"
 
 
 def setup_environment():
-    """Ensure source and destination directories exist."""
     SOURCE_DIR.mkdir(parents=True, exist_ok=True)
-    (DESTINATION_DIR / "processed").mkdir(parents=True, exist_ok=True)
+    DESTINATION_DIR.mkdir(parents=True, exist_ok=True)
 
 
 def pull_released(folder_path=SOURCE_DIR):
-    """Pulls valid files from the source directory."""
     if not folder_path.exists():
         return []
 
@@ -80,13 +80,11 @@ def run_otto(trans_dict, base_url):
 
                 if result == "exact":
                     exact_count += 1
-                    dest = DESTINATION_DIR / "processed" / file.name
-                    shutil.copy2(file, dest)
+                    shutil.copy2(file, DESTINATION_DIR / file.name)
                     print(f"SUCCESS: {file.name}")
                 elif result == "partial":
                     partial_count += 1
-                    dest = DESTINATION_DIR / "processed" / file.name
-                    shutil.copy2(file, dest)
+                    shutil.copy2(file, DESTINATION_DIR / file.name)
                     print(f"SUCCESS (partial match): {file.name}")
                 else:
                     failed_count += 1
@@ -106,22 +104,26 @@ def run_otto(trans_dict, base_url):
 
 
 def error_check(source_dir=SOURCE_DIR):
-    """Cleans up source files once they appear in processed/."""
-    processed_dir = DESTINATION_DIR / "processed"
-
     for file in source_dir.iterdir():
         if not file.is_file():
             continue
 
-        if (processed_dir / file.name).exists():
+        if (DESTINATION_DIR / file.name).exists():
             try:
                 file.unlink()
-                print(f"CLEANUP: Deleted {file.name} from source")
             except Exception as e:
                 print(f"Failed to delete {file.name}: {e}")
 
 
 if __name__ == "__main__":
+    LOG_DIR.mkdir(parents=True, exist_ok=True)
+    log_path = LOG_DIR / f"otto_run_{datetime.now().strftime('%m%d%y_%H%M%S')}.log"
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+        handlers=[logging.FileHandler(log_path)],
+    )
+
     csv_path = None
     try:
         setup_playwright()
@@ -134,8 +136,16 @@ if __name__ == "__main__":
 
     except Exception as e:
         print(f"Unexpected Error: {str(e)}")
-        sys.exit(1)
 
     finally:
         if csv_path and csv_path.exists():
             csv_path.unlink()
+        for handler in logging.getLogger().handlers:
+            handler.flush()
+        if DESTINATION_DIR.exists():
+            try:
+                shutil.copy2(log_path, DESTINATION_DIR / log_path.name)
+            except Exception:
+                pass
+
+    input("\nPress Enter to exit...")
