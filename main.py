@@ -10,9 +10,7 @@ from otto_sync import OttoSync
 
 
 def setup_playwright():
-    try:
-        __compiled__
-    except NameError:
+    if "__compiled__" not in globals():
         return
 
     exe_dir = Path(sys.executable).parent
@@ -30,9 +28,11 @@ def setup_playwright():
         fallback_dir.mkdir(parents=True, exist_ok=True)
         node = exe_dir / "playwright" / "driver" / "node.exe"
         cli = exe_dir / "playwright" / "driver" / "package" / "cli.js"
-        result = subprocess.run([str(node), str(cli), "install", "chromium"], env=os.environ.copy())
+        result = subprocess.run(
+            [str(node), str(cli), "install", "chromium"], env=os.environ.copy())
         if result.returncode != 0:
-            raise RuntimeError("Chromium install failed — check internet connection.")
+            raise RuntimeError(
+                "Chromium install failed — check internet connection.")
 
 
 DATE_STR = datetime.now().strftime("%m%d%y")
@@ -123,7 +123,8 @@ def error_check(source_dir=SOURCE_DIR):
 
 if __name__ == "__main__":
     LOG_DIR.mkdir(parents=True, exist_ok=True)
-    log_path = LOG_DIR / f"otto_run_{datetime.now().strftime('%m%d%y_%H%M%S')}.log"
+    log_path = LOG_DIR / \
+        f"otto_run_{datetime.now().strftime('%m%d%y_%H%M%S')}.log"
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",

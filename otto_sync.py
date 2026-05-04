@@ -8,10 +8,9 @@ import logging
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-try:
-    __compiled__
+if "__compiled__" in globals():
     CHROME_PROFILE_DIR = Path(sys.executable).parent / "chrome_profile"
-except NameError:
+else:
     CHROME_PROFILE_DIR = Path(os.environ["LOCALAPPDATA"]) / "ChromeProfile-Playwright-Nuitka-Deployment"
 
 
@@ -33,9 +32,11 @@ class OttoSync:
                 slow_mo=1000,
             )
             self.page = (
-                self.context.pages[0] if self.context.pages else self.context.new_page()
+                self.context.pages[0] if self.context.pages else self.context.new_page(
+                )
             )
-            logging.info(f"Launched Chromium with profile at {CHROME_PROFILE_DIR}.")
+            logging.info(
+                f"Launched Chromium with profile at {CHROME_PROFILE_DIR}.")
         except Exception as e:
             logging.error(f"Could not launch Chromium: {e}")
             raise e
@@ -104,7 +105,8 @@ class OttoSync:
                     best_len = len(cleaned)
 
         if not transaction_id:
-            logging.warning(f"No matching invoice found in CSV for file: {file_name}")
+            logging.warning(
+                f"No matching invoice found in CSV for file: {file_name}")
             return False
 
         if match_type == "partial":
@@ -135,7 +137,8 @@ class OttoSync:
             self.page.get_by_role("button", name="Edit").evaluate(
                 "node => node.click()"
             )
-            self.page.get_by_role("button", name="Add").evaluate("node => node.click()")
+            self.page.get_by_role("button", name="Add").evaluate(
+                "node => node.click()")
 
             # --- UPLOAD STEPS ---
             input_selector = 'input[type="file"]'
@@ -169,7 +172,8 @@ class OttoSync:
 
             print(f"\n✅ Attached {file_name} to transaction {transaction_id}")
 
-            logging.info(f"\n✅ Attached {file_name} to transaction {transaction_id}")
+            logging.info(
+                f"\n✅ Attached {file_name} to transaction {transaction_id}")
             time.sleep(1)  # Short breath between transactions
             return match_type
 
