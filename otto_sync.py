@@ -1,23 +1,23 @@
+import csv
 import os
 import re
 import sys
+import tempfile
 import time
 import logging
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-try:
-    __compiled__
+if "__compiled__" in globals():
     CHROME_PROFILE_DIR = Path(sys.executable).parent / "chrome_profile"
-except NameError:
+else:
     CHROME_PROFILE_DIR = Path(os.environ["LOCALAPPDATA"]) / "ChromeProfile-Playwright-Nuitka-Deployment"
 
 
 class OttoSync:
-    def __init__(self, trans_dict, base_url):
-        """Initializes the class with a pre-loaded transaction dictionary."""
-        self.trans_dict = trans_dict
+    def __init__(self, base_url):
         self.base_url = base_url
+        self.trans_dict = None
         self.playwright = None
         self.context = None
         self.page = None
@@ -32,9 +32,11 @@ class OttoSync:
                 slow_mo=1000,
             )
             self.page = (
-                self.context.pages[0] if self.context.pages else self.context.new_page()
+                self.context.pages[0] if self.context.pages else self.context.new_page(
+                )
             )
-            logging.info(f"Launched Chromium with profile at {CHROME_PROFILE_DIR}.")
+            logging.info(
+                f"Launched Chromium with profile at {CHROME_PROFILE_DIR}.")
         except Exception as e:
             logging.error(f"Could not launch Chromium: {e}")
             raise e
@@ -49,15 +51,33 @@ class OttoSync:
             self.playwright.stop()
             logging.info("Playwright session closed.")
 
-    def process_file(self, file_path):
-        """
-        Processes a single file passed from main.py.
-        Returns True if successful, False if it fails.
-        """
-        if not self.trans_dict:
-            logging.error("No transactions found in CSV to process.")
-            return False
+    def fetch_transactions(self):
+        """Downloads today's released PO invoices from AiM and loads them into trans_dict."""
+        workdesk_url = f"{self.base_url}/fmax/screen/WORKDESK"
+        self.page.goto(workdesk_url)
+        self.page.get_by_role(
+            "link",
+            name="Accounts Payable ~ Purchase Order Invoice ~ All Released Today",
+        ).click()
 
+        tmp_path = Path(tempfile.gettempdir()) / "otto_browse_temp.csv"
+        with self.page.expect_download() as download_info:
+            self.page.get_by_role("link", name="Export").click()
+        download_info.value.save_as(str(tmp_path))
+
+        self.trans_dict = {}
+        with open(tmp_path, mode="r") as f:
+            reader = csv.reader(f)
+            next(reader, None)
+            for row in reader:
+                if len(row) >= 2:
+                    self.trans_dict[row[0].strip()] = row[1].strip()
+
+        tmp_path.unlink(missing_ok=True)
+        logging.info(f"Loaded {len(self.trans_dict)} transactions from AiM.")
+
+    def process_file(self, file_path):
+        """Processes a single file. Returns 'exact', 'partial', or False."""
         file_name = Path(file_path).name.lower()
 
         # 1. Match the file to a transaction in the CSV
@@ -85,7 +105,8 @@ class OttoSync:
                     best_len = len(cleaned)
 
         if not transaction_id:
-            logging.warning(f"No matching invoice found in CSV for file: {file_name}")
+            logging.warning(
+                f"No matching invoice found in CSV for file: {file_name}")
             return False
 
         if match_type == "partial":
@@ -116,7 +137,8 @@ class OttoSync:
             self.page.get_by_role("button", name="Edit").evaluate(
                 "node => node.click()"
             )
-            self.page.get_by_role("button", name="Add").evaluate("node => node.click()")
+            self.page.get_by_role("button", name="Add").evaluate(
+                "node => node.click()")
 
             # --- UPLOAD STEPS ---
             input_selector = 'input[type="file"]'
@@ -150,7 +172,8 @@ class OttoSync:
 
             print(f"\n✅ Attached {file_name} to transaction {transaction_id}")
 
-            logging.info(f"\n✅ Attached {file_name} to transaction {transaction_id}")
+            logging.info(
+                f"\n✅ Attached {file_name} to transaction {transaction_id}")
             time.sleep(1)  # Short breath between transactions
             return match_type
 
