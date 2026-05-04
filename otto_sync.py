@@ -1,6 +1,8 @@
+import csv
 import os
 import re
 import sys
+import tempfile
 import time
 import logging
 from pathlib import Path
@@ -14,10 +16,9 @@ except NameError:
 
 
 class OttoSync:
-    def __init__(self, trans_dict, base_url):
-        """Initializes the class with a pre-loaded transaction dictionary."""
-        self.trans_dict = trans_dict
+    def __init__(self, base_url):
         self.base_url = base_url
+        self.trans_dict = None
         self.playwright = None
         self.context = None
         self.page = None
@@ -49,15 +50,33 @@ class OttoSync:
             self.playwright.stop()
             logging.info("Playwright session closed.")
 
-    def process_file(self, file_path):
-        """
-        Processes a single file passed from main.py.
-        Returns True if successful, False if it fails.
-        """
-        if not self.trans_dict:
-            logging.error("No transactions found in CSV to process.")
-            return False
+    def fetch_transactions(self):
+        """Downloads today's released PO invoices from AiM and loads them into trans_dict."""
+        workdesk_url = f"{self.base_url}/fmax/screen/WORKDESK"
+        self.page.goto(workdesk_url)
+        self.page.get_by_role(
+            "link",
+            name="Accounts Payable ~ Purchase Order Invoice ~ All Released Today",
+        ).click()
 
+        tmp_path = Path(tempfile.gettempdir()) / "otto_browse_temp.csv"
+        with self.page.expect_download() as download_info:
+            self.page.get_by_role("link", name="Export").click()
+        download_info.value.save_as(str(tmp_path))
+
+        self.trans_dict = {}
+        with open(tmp_path, mode="r") as f:
+            reader = csv.reader(f)
+            next(reader, None)
+            for row in reader:
+                if len(row) >= 2:
+                    self.trans_dict[row[0].strip()] = row[1].strip()
+
+        tmp_path.unlink(missing_ok=True)
+        logging.info(f"Loaded {len(self.trans_dict)} transactions from AiM.")
+
+    def process_file(self, file_path):
+        """Processes a single file. Returns 'exact', 'partial', or False."""
         file_name = Path(file_path).name.lower()
 
         # 1. Match the file to a transaction in the CSV

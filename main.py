@@ -7,7 +7,6 @@ from pathlib import Path
 from datetime import datetime
 
 from otto_sync import OttoSync
-from aim_data import fetch_browse_csv, load_transactions
 
 
 def setup_playwright():
@@ -59,20 +58,27 @@ def pull_released(folder_path=SOURCE_DIR):
     ]
 
 
-def run_otto(trans_dict, base_url):
-    print("--- Starting Otto Sync Session ---")
+def run_otto(base_url):
     files = pull_released()
 
     if not files:
         print("No files found.")
         return
 
+    print("--- Starting Otto Sync Session ---")
+
     exact_count = 0
     partial_count = 0
     failed_count = 0
 
     try:
-        with OttoSync(trans_dict, base_url) as otto:
+        with OttoSync(base_url) as otto:
+            otto.fetch_transactions()
+
+            if not otto.trans_dict:
+                print("No released transactions found for today. Exiting.")
+                return
+
             for file in files:
                 print(f"Syncing: {file.name}")
 
@@ -121,16 +127,13 @@ if __name__ == "__main__":
     logging.basicConfig(
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",
-        handlers=[logging.FileHandler(log_path)],
+        handlers=[logging.FileHandler(log_path, encoding="utf-8")],
     )
 
-    csv_path = None
     try:
         setup_playwright()
         setup_environment()
-        csv_path = fetch_browse_csv()
-        trans_dict = load_transactions(csv_path)
-        run_otto(trans_dict, BASE_URL)
+        run_otto(BASE_URL)
         error_check()
         print("Run completed successfully.")
 
@@ -138,10 +141,11 @@ if __name__ == "__main__":
         print(f"Unexpected Error: {str(e)}")
 
     finally:
-        if csv_path and csv_path.exists():
-            csv_path.unlink()
-        for handler in logging.getLogger().handlers:
+        root_logger = logging.getLogger()
+        for handler in root_logger.handlers[:]:
             handler.flush()
+            handler.close()
+            root_logger.removeHandler(handler)
         if DESTINATION_DIR.exists():
             try:
                 shutil.copy2(log_path, DESTINATION_DIR / log_path.name)
