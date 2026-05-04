@@ -71,6 +71,7 @@ playwright codegen --user-data-dir="C:\ChromeDebugProfile" http://targeturl.com/
 ```
 
 
+<<<<<<< HEAD
 Standalone build
 ```
 uv run python -m nuitka --standalone --mingw64 --playwright-include-browser=chromium-1208 main.py
