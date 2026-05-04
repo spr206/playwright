@@ -71,7 +71,6 @@ playwright codegen --user-data-dir="C:\ChromeDebugProfile" http://targeturl.com/
 ```
 
 
-<<<<<<< HEAD
 Standalone build
 ```
 uv run python -m nuitka --standalone --mingw64 --playwright-include-browser=chromium-1208 main.py
@@ -79,10 +78,12 @@ uv run python -m nuitka --standalone --mingw64 --playwright-include-browser=chro
 
 uv run python -m nuitka --clean-cache=all
 
-=======
 python -m nuitka --standalone ^
   --include-data-dir=.venv\Lib\site-packages\playwright\driver=playwright\driver ^
   main.py
+
+
+uv run python -m nuitka --clean-cache=all
 
 Todo:
   - Utilize the existing open browser session from the csv grab for the batch
@@ -90,4 +91,3 @@ Todo:
   - Don't print 'deleted....' for each deleted file during cleanup
   - Place finished pdfs into mmddyy instead of mmddyy\processed.  The \processed folder is not needed.
   - Place a copy of the session log into the dated folder where completed pdf are placed
->>>>>>> c052830e64ec02443889b1edef1019a6ddf39b49
