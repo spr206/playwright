@@ -7,3 +7,5 @@ ChromeDebugProfile
 chrome_test
 *.csv
 logs
+*.build
+*.dist

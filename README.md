@@ -66,15 +66,24 @@ otto_sync.py
 ```
 
 Playwright recorder
-
 ```
 playwright codegen --user-data-dir="C:\ChromeDebugProfile" http://targeturl.com/url
 ```
 
 
+Standalone build
+```
+uv run python -m nuitka --standalone --mingw64 --playwright-include-browser=chromium-1208 main.py
+```
+
+uv run python -m nuitka --clean-cache=all
+
 python -m nuitka --standalone ^
   --include-data-dir=.venv\Lib\site-packages\playwright\driver=playwright\driver ^
   main.py
+
+
+uv run python -m nuitka --clean-cache=all
 
 Todo:
   - Utilize the existing open browser session from the csv grab for the batch
