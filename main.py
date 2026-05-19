@@ -12,7 +12,7 @@ from aim_data import fetch_browse_csv, load_transactions
 TEST_MODE = False  # Set True to use test server + .ignore/test_files/
 
 DATE_STR = datetime.now().strftime("%m%d%y")
-SOURCE_DIR = Path(".ignore/test_files") if TEST_MODE else Path("I:/groups/fac2/fabs/stores/FSSAP/Done/otto_sync_test")
+SOURCE_DIR = Path(".ignore/test_files") if TEST_MODE else Path("I:/groups/fac2/fabs/stores/FSSAP/Done/")
 DESTINATION_DIR = SOURCE_DIR / DATE_STR
 BASE_URL = "https://washingtontest.assetworks.hosting" if TEST_MODE else "https://washington.assetworks.hosting"
 CSV_FILE = Path(".ignore/test_files/browse.csv") if TEST_MODE else Path("browse.csv")
