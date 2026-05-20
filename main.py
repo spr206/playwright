@@ -80,18 +80,18 @@ def run_otto(base_url):
                 return
 
             for file in files:
-                print(f"Syncing: {file.name}")
+                # print(f"Syncing: {file.name}")
 
                 result = otto.process_file(file)
 
                 if result == "exact":
                     exact_count += 1
                     shutil.copy2(file, DESTINATION_DIR / file.name)
-                    print(f"SUCCESS: {file.name}")
+                    # print(f"SUCCESS: {file.name}")
                 elif result == "partial":
                     partial_count += 1
                     shutil.copy2(file, DESTINATION_DIR / file.name)
-                    print(f"SUCCESS (partial match): {file.name}")
+                    # print(f"SUCCESS (partial match): {file.name}")
                 else:
                     failed_count += 1
                     print(f"FAILED: {file.name} — left in source for retry")
