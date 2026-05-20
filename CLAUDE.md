@@ -45,9 +45,8 @@ Nuitka is a dev dependency (`pyproject.toml`). When compiled, `__compiled__` is 
 ## Input/output structure
 
 ```
-I:/.../otto_sync_test/            # SOURCE_DIR — input PDFs/MSGs
-I:/.../otto_sync_test/MMDDYY/
-  processed/                      # Successfully attached files copied here
+I:/.../Done/            # SOURCE_DIR — input PDFs/MSGs
+I:/.../Done/MMDDYY/     # Successfully uploaded files copied here
 ./logs/                           # Local run logs
 ```
 

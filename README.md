@@ -86,10 +86,4 @@ python -m nuitka --standalone ^
 uv run python -m nuitka --clean-cache=all
 
 Todo:
-  - Utilize the existing open browser session from the csv grab for the batch
-  - Keep cli window open after batch completion
-  - Don't print 'deleted....' for each deleted file during cleanup
-  - Place finished pdfs into mmddyy instead of mmddyy\processed.  The \processed folder is not needed.
-  - Place a copy of the session log into the dated folder where completed pdf are placed
-
   - Increase timeout for csv grab to 60s 
