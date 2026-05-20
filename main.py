@@ -36,7 +36,7 @@ def setup_playwright():
 
 
 DATE_STR = datetime.now().strftime("%m%d%y")
-SOURCE_DIR = Path("I:/groups/fac2/fabs/stores/FSSAP/Done/otto_sync_test")
+SOURCE_DIR = Path("I:/groups/fac2/fabs/stores/FSSAP/Done/")
 DESTINATION_DIR = SOURCE_DIR / DATE_STR
 LOG_DIR = Path("./logs")
 BASE_URL = "https://washington.assetworks.hosting"
