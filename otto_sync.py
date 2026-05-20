@@ -54,7 +54,7 @@ class OttoSync:
     def fetch_transactions(self):
         """Downloads today's released PO invoices from AiM and loads them into trans_dict."""
         workdesk_url = f"{self.base_url}/fmax/screen/WORKDESK"
-        self.page.goto(workdesk_url)
+        self.page.goto(workdesk_url, timeout=90000)
         self.page.get_by_role(
             "link",
             name="Accounts Payable ~ Purchase Order Invoice ~ All Released Today",
