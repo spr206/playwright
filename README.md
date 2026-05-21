@@ -86,6 +86,7 @@ python -m nuitka --standalone ^
 uv run python -m nuitka --clean-cache=all
 
 Todo:
+<<<<<<< HEAD
   - Utilize the existing open browser session from the csv grab for the batch
   - Keep cli window open after batch completion
   - Don't print 'deleted....' for each deleted file during cleanup
