@@ -54,7 +54,7 @@ class OttoSync:
     def fetch_transactions(self):
         """Downloads today's released PO invoices from AiM and loads them into trans_dict."""
         workdesk_url = f"{self.base_url}/fmax/screen/WORKDESK"
-        self.page.goto(workdesk_url)
+        self.page.goto(workdesk_url, timeout=90000)
         self.page.get_by_role(
             "link",
             name="Accounts Payable ~ Purchase Order Invoice ~ All Released Today",
@@ -161,10 +161,27 @@ class OttoSync:
             self.page.get_by_role("button", name="Next").evaluate(
                 "node => node.click()"
             )
+
+
+    # Failing here
             self.page.get_by_role("button", name="Save").evaluate(
                 "node => node.click()"
             )
 
+    
+    # # Try this instead
+    #         # 1. Wait for the page reload that happens after saving.
+    #         # Added a 30s timeout here just in case the server is chugging.
+    #         with self.page.expect_navigation(timeout=30000):
+    #             self.page.get_by_role("button", name="Save").evaluate("node => node.click()")
+
+    #         # 2. Wait for the Download link.
+    #         # Bumped to 30 seconds (30000ms) to account for legacy SaaS processing times.
+    #         self.page.get_by_role("link", name="Download").wait_for(
+    #             state="visible", timeout=30000
+    #         )
+
+    # This isn't working and sometimes timing out here
             # Wait for the Download link to be visible on the page
             self.page.get_by_role("link", name="Download").wait_for(
                 state="visible", timeout=10000

@@ -99,3 +99,6 @@ uv run python -m nuitka --standalone `
   --include-data-dir=.venv\Lib\site-packages\playwright\driver=playwright\driver `
   --output-filename=otto.exe `
   main.py
+=======
+  - Increase timeout for csv grab to 60s 
+>>>>>>> f39d15c4ff2754f128b81f7fdcae93afb3659c80
